@@ -32,8 +32,15 @@ pub struct CJiebaWord {
     pub len: usize
 }
 
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CWordWeight {
+    pub word: *mut c_char ,
+    pub weight: f64
+}
+
 extern "C" {
-    pub fn Cut(handle: Jieba, sentence: *const c_char, len: c_int) -> *mut CJiebaWord; 
+    pub fn Cut2(handle: Jieba, sentence: *const c_char, len: c_int) -> *mut *mut c_char; 
 }
 
 extern "C" {
@@ -98,11 +105,11 @@ fn main() {
     };
 
     unsafe {
-        let word = Cut(jieba, CString::new("南京市长江大桥").unwrap().as_ptr(), 21);
+        let word = Cut2(jieba, CString::new("南京市长江大桥我是拖拉机学院手扶拖拉机专业的。不用多久，我就会升职加薪，当上CEO，走上人生巅峰。").unwrap().as_ptr(), 21);
 
-        let s1: Box<CJiebaWord> = Box::from_raw(word);
+        //let s1: Box<CJiebaWord> = Box::from_raw(word);
 
-        println!("{:?}", s1);
+        //println!("{:?}", s1);
 
 
         // let z: Vec<CJiebaWord> = Vec::from_raw_parts(word, 2, 2);
@@ -117,7 +124,12 @@ fn main() {
         //     println!("{:?}", String::from_utf8_lossy(&s[1..]));
         // }
 
-    
+        //let s1: Box<CJiebaWord> = Box::from_raw(word);
+
+        let s: Vec<*mut c_char> = Vec::from_raw_parts(word, 2, 2);
+
+        println!("{:?}", CString::from_raw(s[0]).to_str());
+        println!("{:?}", CString::from_raw(s[1]).to_str());
     }
 
     unsafe {
