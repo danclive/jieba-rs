@@ -100,10 +100,22 @@ fn main() {
     unsafe {
         let word = Cut(jieba, CString::new("南京市长江大桥").unwrap().as_ptr(), 21);
 
-        let s = CStr::from_ptr((*word).word);
+        let s1: Box<CJiebaWord> = Box::from_raw(word);
 
-        println!("{:?}", s.to_str().unwrap());
-        println!("{:?}", (*word).len);
+        println!("{:?}", s1);
+
+
+        // let z: Vec<CJiebaWord> = Vec::from_raw_parts(word, 2, 2);
+
+        // println!("{:?}", z);
+
+        // for i in z {
+        //     let s: Vec<u8> = Vec::from_raw_parts(i.word as *mut u8, i.len, i.len);
+
+        //     println!("{:?}", s);
+
+        //     println!("{:?}", String::from_utf8_lossy(&s[1..]));
+        // }
 
     
     }
