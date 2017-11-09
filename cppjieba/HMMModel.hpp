@@ -3,6 +3,7 @@
 
 #include "limonp/StringUtil.hpp"
 #include "Trie.hpp"
+#include "limonp/Logging.hpp"
 
 namespace cppjieba {
 

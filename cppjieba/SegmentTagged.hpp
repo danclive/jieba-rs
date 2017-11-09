@@ -2,6 +2,7 @@
 #define CPPJIEBA_SEGMENTTAGGED_H
 
 #include "SegmentBase.hpp"
+#include "DictTrie.hpp"
 
 namespace cppjieba {
 

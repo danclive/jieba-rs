@@ -6,8 +6,7 @@ extern crate libc;
 
 use std::os::raw::c_void;
 use std::os::raw::c_char;
-
-//include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
+use std::os::raw::c_int;
 
 extern "C" {
     pub fn FreeWords(words : *mut *mut c_char);
@@ -45,31 +44,31 @@ extern "C" {
 }
 
 extern "C" {
-    pub fn FreeJieba ( arg1 : Jieba , ) ; 
+    pub fn FreeJieba(arg1: Jieba);
 }
 extern "C" {
-    pub fn Cut ( handle : Jieba , sentence : * const :: std :: os :: raw :: c_char , is_hmm_used : :: std :: os :: raw :: c_int , ) -> * mut * mut :: std :: os :: raw :: c_char ; 
+    pub fn Cut(handle: Jieba, sentence: *const c_char, is_hmm_used: c_int) -> *mut *mut c_char; 
 }
 extern "C" {
-    pub fn CutAll ( handle : Jieba , sentence : * const :: std :: os :: raw :: c_char , ) -> * mut * mut :: std :: os :: raw :: c_char ; 
+    pub fn CutAll(handle: Jieba, sentence : *const c_char) -> *mut *mut c_char; 
 }
 extern "C" {
-    pub fn CutForSearch ( handle : Jieba , sentence : * const :: std :: os :: raw :: c_char , is_hmm_used : :: std :: os :: raw :: c_int , ) -> * mut * mut :: std :: os :: raw :: c_char ; 
+    pub fn CutForSearch(handle: Jieba, sentence: *const c_char, is_hmm_used: c_int) -> *mut *mut c_char; 
 }
 extern "C" {
-    pub fn Tag ( handle : Jieba , sentence : * const :: std :: os :: raw :: c_char , ) -> * mut * mut :: std :: os :: raw :: c_char ; 
+    pub fn Tag(handle: Jieba, sentence : *const c_char) -> *mut *mut c_char ; 
 }
 extern "C" {
-    pub fn AddWord ( handle : Jieba , word : * const :: std :: os :: raw :: c_char , ) ; 
+    pub fn AddWord(handle: Jieba , word : *const c_char); 
 }
 extern "C" {
-    pub fn Tokenize ( x : Jieba , sentence : * const :: std :: os :: raw :: c_char , mode : TokenizeMode , is_hmm_used : :: std :: os :: raw :: c_int , ) -> * mut Word ; 
+    pub fn Tokenize(x: Jieba, sentence: *const c_char, mode: TokenizeMode, is_hmm_used: c_int) -> * mut Word; 
 }
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct CWordWeight{
-    pub word : * mut :: std :: os :: raw :: c_char ,
-    pub weight : f64
+    pub word: *mut c_char,
+    pub weight: f64
 }
 #[test]
 fn bindgen_test_layout_CWordWeight() {
@@ -79,16 +78,16 @@ fn bindgen_test_layout_CWordWeight() {
     assert_eq ! ( unsafe { & ( * ( 0 as * const CWordWeight ) ) . weight as * const _ as usize } , 8usize , concat ! ( "Alignment of field: " , stringify ! ( CWordWeight ) , "::" , stringify ! ( weight ) ) ) ; 
 }
 extern "C" {
-    pub fn Extract ( handle : Jieba , sentence : * const :: std :: os :: raw :: c_char , top_k : :: std :: os :: raw :: c_int , ) -> * mut * mut :: std :: os :: raw :: c_char ; 
+    pub fn Extract(handle: Jieba, sentence: *const c_char, top_k: c_int) -> *mut *mut c_char; 
 }
 extern "C" {
-    pub fn ExtractWithWeight( handle : Jieba , sentence : * const :: std :: os :: raw :: c_char , top_k : :: std :: os :: raw :: c_int) -> * mut CWordWeight ; 
+    pub fn ExtractWithWeight(handle: Jieba, sentence: *const c_char, top_k: c_int) -> *mut CWordWeight; 
 }
 extern "C" {
-    pub fn FreeWordWeights( wws : * mut CWordWeight) ; 
+    pub fn FreeWordWeights(wws: *mut CWordWeight); 
 }
 
 fn main() {
-    println!("{:?}", 123);
+    println!("{:?}", "hello world");
 }
 

@@ -7,6 +7,7 @@
 #include <cassert>
 #include "HMMModel.hpp"
 #include "SegmentBase.hpp"
+#include "DictTrie.hpp"
 
 namespace cppjieba {
 class HMMSegment: public SegmentBase {

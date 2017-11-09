@@ -8,4 +8,4 @@ authors = ["dangcheng <dangcheng@hotmail.com>"]
 libc = "*"
 
 [build-dependencies]
-gcc = { version = "*", features = ["parallel"] }
+gcc = { version = "0.3", features = ["parallel"] }

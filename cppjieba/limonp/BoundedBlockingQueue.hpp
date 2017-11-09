@@ -2,6 +2,9 @@
 #define LIMONP_BOUNDED_BLOCKING_QUEUE_HPP
 
 #include "BoundedQueue.hpp"
+#include "NonCopyable.hpp"
+#include "MutexLock.hpp"
+#include "Condition.hpp"
 
 namespace limonp {
 
