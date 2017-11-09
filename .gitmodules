@@ -1,0 +1,3 @@
+[submodule "cjieba"]
+	path = cjieba
+	url = https://github.com/yanyiwu/cjieba

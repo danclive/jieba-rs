@@ -8,30 +8,8 @@ use std::os::raw::c_void;
 use std::os::raw::c_char;
 use std::os::raw::c_int;
 
-extern "C" {
-    pub fn FreeWords(words : *mut *mut c_char);
-}
 
 pub type Jieba = *mut c_void;
-
-#[repr(C)]
-#[derive(Debug, Copy, Clone)]
-pub struct Word {
-    pub offset: usize,
-    pub len: usize
-}
-
-#[test]
-fn bindgen_test_layout_Word() {
-    assert_eq!(::std::mem::size_of::<Word>(), 16usize, concat!("Size of: ", stringify!(Word)));
-    assert_eq!(::std::mem::align_of::<Word>(), 8usize , concat!( "Alignment of ", stringify!(Word)));
-    assert_eq!(unsafe {&(*( 0 as * const Word)).offset as * const _ as usize}, 0usize , concat ! ( "Alignment of field: " , stringify ! ( Word ) , "::" , stringify ! ( offset ) ) );
-    assert_eq!(unsafe {&(*( 0 as * const Word)).len as * const _ as usize}, 8usize , concat ! ( "Alignment of field: " , stringify ! ( Word ) , "::" , stringify ! ( len ) ) );
-}
-
-pub const TokenizeMode_DefaultMode : TokenizeMode = 0;
-pub const TokenizeMode_SearchMode : TokenizeMode = 1;
-pub type TokenizeMode = ::std::os::raw::c_uint;
 
 extern "C" {
     pub fn NewJieba(
@@ -44,50 +22,94 @@ extern "C" {
 }
 
 extern "C" {
-    pub fn FreeJieba(arg1: Jieba);
+    pub fn FreeJieba(handle: Jieba);
 }
-extern "C" {
-    pub fn Cut(handle: Jieba, sentence: *const c_char, is_hmm_used: c_int) -> *mut *mut c_char; 
-}
-extern "C" {
-    pub fn CutAll(handle: Jieba, sentence : *const c_char) -> *mut *mut c_char; 
-}
-extern "C" {
-    pub fn CutForSearch(handle: Jieba, sentence: *const c_char, is_hmm_used: c_int) -> *mut *mut c_char; 
-}
-extern "C" {
-    pub fn Tag(handle: Jieba, sentence : *const c_char) -> *mut *mut c_char ; 
-}
-extern "C" {
-    pub fn AddWord(handle: Jieba , word : *const c_char); 
-}
-extern "C" {
-    pub fn Tokenize(x: Jieba, sentence: *const c_char, mode: TokenizeMode, is_hmm_used: c_int) -> * mut Word; 
-}
+
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
-pub struct CWordWeight{
-    pub word: *mut c_char,
-    pub weight: f64
+pub struct CJiebaWord {
+    pub word: *const c_char,
+    pub len: usize
 }
-#[test]
-fn bindgen_test_layout_CWordWeight() {
-    assert_eq ! ( :: std :: mem :: size_of :: < CWordWeight > ( ) , 16usize , concat ! ( "Size of: " , stringify ! ( CWordWeight ) ) );
-    assert_eq ! ( :: std :: mem :: align_of :: < CWordWeight > ( ) , 8usize , concat ! ( "Alignment of " , stringify ! ( CWordWeight ) ) );
-    assert_eq ! ( unsafe { & ( * ( 0 as * const CWordWeight ) ) . word as * const _ as usize } , 0usize , concat ! ( "Alignment of field: " , stringify ! ( CWordWeight ) , "::" , stringify ! ( word ) ) );
-    assert_eq ! ( unsafe { & ( * ( 0 as * const CWordWeight ) ) . weight as * const _ as usize } , 8usize , concat ! ( "Alignment of field: " , stringify ! ( CWordWeight ) , "::" , stringify ! ( weight ) ) ) ; 
-}
+
 extern "C" {
-    pub fn Extract(handle: Jieba, sentence: *const c_char, top_k: c_int) -> *mut *mut c_char; 
+    pub fn Cut(handle: Jieba, sentence: *const c_char, len: c_int) -> *mut CJiebaWord; 
 }
+
 extern "C" {
-    pub fn ExtractWithWeight(handle: Jieba, sentence: *const c_char, top_k: c_int) -> *mut CWordWeight; 
+    pub fn CutWithoutTagName(handle: Jieba, sentence: *const c_char, len: c_int, tag_name: *const c_char) -> *mut CJiebaWord;
 }
+
 extern "C" {
-    pub fn FreeWordWeights(wws: *mut CWordWeight); 
+    pub fn FreeWords(words : *mut CJiebaWord);
 }
+
+extern "C" {
+    pub fn JiebaInsertUserWord(handle: Jieba, word: *const c_char) -> bool;
+}
+
+pub type Extractor = *mut c_void;
+
+extern "C" {
+    pub fn NewExtractor(
+        hmm_path: *const c_char,
+        idf_path: *const c_char,
+        stop_word_path: *const c_char,
+        user_dict_path: *const c_char,
+    ) -> Extractor;
+}
+
+extern "C" {
+    pub fn Extract(handle: Extractor, sentence: *const c_char, len: c_int, topn: c_int) -> *mut CJiebaWord;
+}
+
+extern "C" {
+    pub fn FreeExtractor(handle: Extractor);
+}
+
+
+use std::ffi::CString;
+use std::ffi::CStr;
+
+const DICT_PATH: &'static str = "/home/simple/github/jieba-rs/cjieba/dict/jieba.dict.utf8";
+const HMM_PATH: &'static str = "/home/simple/github/jieba-rs/cjieba/dict/hmm_model.utf8";
+const USER_PATH: &'static str = "/home/simple/github/jieba-rs/cjieba/dict/user.dict.utf8";
+const IDF_PATH: &'static str = "/home/simple/github/jieba-rs/cjieba/dict/idf.utf8";
+const STOP_WORDS_PATH: &'static str = "/home/simple/github/jieba-rs/cjieba/dict/stop_words.utf8";
+
 
 fn main() {
     println!("{:?}", "hello world");
+
+    let dict_path = CString::new(DICT_PATH).unwrap();
+    let hmm_path = CString::new(HMM_PATH).unwrap();
+    let user_path = CString::new(USER_PATH).unwrap();
+    let idf_path = CString::new(IDF_PATH).unwrap();
+    let stop_path = CString::new(STOP_WORDS_PATH).unwrap();
+
+    let jieba = unsafe {
+        NewJieba(
+            dict_path.as_ptr(),
+            hmm_path.as_ptr(),
+            user_path.as_ptr(),
+            idf_path.as_ptr(),
+            stop_path.as_ptr()
+        ) 
+    };
+
+    unsafe {
+        let word = Cut(jieba, CString::new("南京市长江大桥").unwrap().as_ptr(), 21);
+
+        let s = CStr::from_ptr((*word).word);
+
+        println!("{:?}", s.to_str().unwrap());
+        println!("{:?}", (*word).len);
+
+    
+    }
+
+    unsafe {
+        FreeJieba(jieba);
+    }
 }
 
