@@ -1,8 +1,13 @@
 [package]
-name = "jieba-rs"
+name = "jieba"
 version = "0.1.0"
 build = "build.rs"
 authors = ["dangcheng <dangcheng@hotmail.com>"]
+
+[[bin]]
+doc = false
+name = "main"
+path = "src/main.rs"
 
 [dependencies]
 libc = "*"
