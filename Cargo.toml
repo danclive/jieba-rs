@@ -18,8 +18,5 @@ exclude       = [
   "test/**/*",
 ]
 
-[dependencies]
-libc = "*"
-
 [build-dependencies]
 gcc = { version = "0.3", features = ["parallel"] }
