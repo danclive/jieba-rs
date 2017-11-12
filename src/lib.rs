@@ -14,12 +14,19 @@ type TokenizeMode = c_int;
 const DefaultMode: TokenizeMode = 0;
 const SearchMode: TokenizeMode = 1;
 
-# [ repr ( C ) ] # [ derive ( Debug , Copy , Clone ) ] pub struct Word { pub offset : usize , pub len : usize , }
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct Word {
+    pub offset: usize,
+    pub len : usize
+}
 
-# [ repr ( C ) ] # [ derive ( Debug , Copy , Clone ) ] 
-pub struct CWordWeight { pub word : * mut :: std :: os :: raw :: c_char , pub weight : f64 , }
-
-
+#[repr(C)]
+#[derive(Debug, Copy, Clone)] 
+pub struct CWordWeight {
+    pub word: *mut c_char,
+    pub weight: f64
+}
 
 extern "C" {
     pub fn NewJieba(
@@ -34,86 +41,162 @@ extern "C" {
 
     fn FreeWords(words: *mut *mut c_char);
 
-    fn Cut(handle: *mut c_void, sentence: *const c_char, len: c_int) -> *mut *mut c_char;
+    fn Cut(handle: *mut c_void, sentence: *const c_char, is_hmm_used: c_int) -> *mut *mut c_char;
 
-    fn CutAll (handle : *mut c_void, sentence: * const c_char) -> * mut * mut c_char ; 
+    fn CutAll (handle: *mut c_void, sentence: * const c_char) -> * mut * mut c_char; 
 
-    fn CutForSearch(handle : *mut c_void, sentence: * const c_char , is_hmm_used : c_int) -> * mut * mut c_char ;
+    fn CutForSearch(handle: *mut c_void, sentence: * const c_char, is_hmm_used: c_int) -> *mut *mut c_char;
 
-    fn Tag( handle : *mut c_void , sentence: * const c_char) -> * mut * mut c_char ; 
+    fn Tag( handle: *mut c_void, sentence: * const c_char) -> * mut * mut c_char;
 
-    fn AddWord(handle : *mut c_void , word: * const c_char) ;
+    fn AddWord(handle: *mut c_void, word: * const c_char);
 
-    fn Tokenize(x : *mut c_void, sentence: * const c_char, mode: TokenizeMode , is_hmm_used: c_int) -> * mut Word ;
+    fn Tokenize(x: *mut c_void, sentence: * const c_char, mode: TokenizeMode , is_hmm_used: c_int) -> *mut Word;
     
-    fn Extract(handle : *mut c_void, sentence: *const c_char, top_k: c_int) -> *mut *mut c_char ;
+    fn Extract(handle: *mut c_void, sentence: *const c_char, top_k: c_int) -> *mut *mut c_char;
 
-    fn ExtractWithWeight(handle: *mut c_void, sentence: *const c_char, top_k: c_int) -> *mut CWordWeight; 
+    fn ExtractWithWeight(handle: *mut c_void, sentence: *const c_char, top_k: c_int) -> *mut CWordWeight;
 
-    fn FreeWordWeights(wws : *mut CWordWeight);
+    fn FreeWordWeights(wws: *mut CWordWeight);
 }
 
 use std::ffi::CString;
 
 #[derive(Debug)]
 pub struct Jieba {
-    ptr: *mut c_void,
+    inner: *mut c_void,
+}
+
+pub struct JiebaDict {
+    pub dict: CString,
+    pub hmm: CString,
+    pub user: CString,
+    pub idf: CString,
+    pub stop: CString
+}
+
+impl JiebaDict {
+    pub fn new(dict: Option<&str>, hmm: Option<&str>, user_dict: Option<&str>, idf_path: Option<&str>, stop_path: Option<&str>) -> Self {
+        JiebaDict {
+            dict: CString::new(dict.unwrap_or("cjieba/dict/jieba.dict.utf8")).expect("Can not parser dict path!"),
+            hmm: CString::new(hmm.unwrap_or("cjieba/dict/hmm_model.utf8")).expect("Can not parser hmm model path!"),
+            user: CString::new(user_dict.unwrap_or("cjieba/dict/user.dict.utf8")).expect("Can not parser user dict path!"),
+            idf: CString::new(idf_path.unwrap_or("cjieba/dict/idf.utf8")).expect("Can not parser idf path!"),
+            stop: CString::new(stop_path.unwrap_or("cjieba/dict/stop_words.utf8")).expect("Can not parser stop words path!")
+        }
+    }
+}
+
+impl Default for JiebaDict {
+    fn default() -> Self {
+        JiebaDict {
+            dict: CString::new("cjieba/dict/jieba.dict.utf8").expect("Can not parser dict path!"),
+            hmm: CString::new("cjieba/dict/hmm_model.utf8").expect("Can not parser hmm model path!"),
+            user: CString::new("cjieba/dict/user.dict.utf8").expect("Can not parser user dict path!"),
+            idf: CString::new("cjieba/dict/idf.utf8").expect("Can not parser idf path!"),
+            stop: CString::new("cjieba/dict/stop_words.utf8").expect("Can not parser stop words path!")
+        }
+    }
 }
 
 impl Jieba {
-    pub fn init() -> Self {
-        const DICT_PATH: &'static str = "cjieba/dict/jieba.dict.utf8";
-        const HMM_PATH: &'static str = "cjieba/dict/hmm_model.utf8";
-        const USER_PATH: &'static str = "cjieba/dict/user.dict.utf8";
-        const IDF_PATH: &'static str = "cjieba/dict/idf.utf8";
-        const STOP_WORDS_PATH: &'static str = "cjieba/dict/stop_words.utf8";
+    pub fn new() -> Self {
+        Jieba::with_dict(JiebaDict::default())
+    }
 
-        let dict_path = CString::new(DICT_PATH).unwrap();
-        let hmm_path = CString::new(HMM_PATH).unwrap();
-        let user_path = CString::new(USER_PATH).unwrap();
-        let idf_path = CString::new(IDF_PATH).unwrap();
-        let stop_path = CString::new(STOP_WORDS_PATH).unwrap();
+    pub fn with_dict(dict: JiebaDict) -> Self {
         unsafe {
             Jieba {
-                ptr: NewJieba(
-                    dict_path.as_ptr(),
-                    hmm_path.as_ptr(),
-                    user_path.as_ptr(),
-                    idf_path.as_ptr(),
-                    stop_path.as_ptr(),
-                ),
+                inner: NewJieba(
+                    dict.dict.as_ptr(),
+                    dict.hmm.as_ptr(),
+                    dict.user.as_ptr(),
+                    dict.idf.as_ptr(),
+                    dict.stop.as_ptr()
+                )
             }
         }
     }
-    pub fn cut(&self, msg: &str, hmm: bool) -> Vec<String> {
-        let hmm = if hmm { 1 } else { 0 };
 
-        let cstr = CString::new(msg).unwrap();
-        let cstr_ptr = cstr.as_ptr();
-        let words_ptr = unsafe { Cut(self.ptr, cstr_ptr, hmm) };
+    pub fn cut(&self, sentence: &str, is_hmm_used: bool) -> Vec<String> {
 
-        let mut cs: Vec<String> = Vec::new();
-        let mut idx = 0;
+        let cstr = CString::new(sentence).unwrap();
+        let sentence_ptr = cstr.as_ptr();
+
+        let words_ptr = unsafe {
+            Cut(self.inner, sentence_ptr, is_hmm_used as c_int)
+        };
+
+        convert_ptr_vec(words_ptr)
+    }
+
+    pub fn cut_all(&self, sentence: &str) -> Vec<String> {
+        let cstr = CString::new(sentence).unwrap();
+        let sentence_ptr = cstr.as_ptr();
+
+        let words_ptr = unsafe {
+            CutAll(self.inner, sentence_ptr)
+        };
+
+        convert_ptr_vec(words_ptr)
+    }
+
+    pub fn cut_for_search(&self, sentence: &str, is_hmm_used: bool) -> Vec<String> {
+        let cstr = CString::new(sentence).unwrap();
+        let sentence_ptr = cstr.as_ptr();
+
+        let words_ptr = unsafe {
+            CutForSearch(self.inner, sentence_ptr, is_hmm_used as c_int)
+        };
+
+        convert_ptr_vec(words_ptr)
+    }
+
+    pub fn tag(&self, sentence: &str) -> Vec<String> {
+        let cstr = CString::new(sentence).unwrap();
+        let sentence_ptr = cstr.as_ptr();
+
+        let words_ptr = unsafe {
+            Tag(self.inner, sentence_ptr)
+        };
+
+        convert_ptr_vec(words_ptr)
+    }
+
+    pub fn add_word(&self, word: &str) {
+        let cstr = CString::new(word).unwrap();
+        let word_ptr = cstr.as_ptr();
 
         unsafe {
-            while !words_ptr.offset(idx).is_null() && !(*(words_ptr.offset(idx))).is_null() {
-
-                cs.push(
-                    CString::from_raw(*(words_ptr.offset(idx))).into_string().unwrap()
-                );
-
-                idx += 1;
-            }
-
-            FreeWords(words_ptr);
+            AddWord(self.inner, word_ptr);
         }
-
-        cs
     }
 }
 
 impl Drop for Jieba {
     fn drop(&mut self) {
-        unsafe {FreeJieba(self.ptr)};
+        unsafe {
+            FreeJieba(self.inner);
+        }
     }
+}
+
+fn convert_ptr_vec(words_ptr: *mut *mut c_char) -> Vec<String> {
+    let mut vec_str = Vec::new();
+
+    unsafe {
+        let mut idx = 0;
+
+        while !words_ptr.offset(idx).is_null() && !(*(words_ptr.offset(idx))).is_null() {
+            vec_str.push(
+                CString::from_raw(*(words_ptr.offset(idx))).into_string().unwrap()
+            );
+
+            idx += 1;
+        }
+
+        FreeWords(words_ptr);
+    }
+
+    vec_str
 }

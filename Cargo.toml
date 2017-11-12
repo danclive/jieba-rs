@@ -1,13 +1,22 @@
 [package]
 name = "jieba"
 version = "0.1.0"
-build = "build.rs"
-authors = ["dangcheng <dangcheng@hotmail.com>"]
 
-[[bin]]
-doc = false
-name = "main"
-path = "src/main.rs"
+license       = "MIT"
+authors       = ["mitum <dangcheng@hotmail.com>"]
+description   = "segment"
+documentation = "https://docs.rs/sincere"
+homepage      = "https://github.com/mitum/sincere"
+repository    = "https://github.com/mitum/sincere"
+keywords      = ["segment", "words", "jieba"]
+readme        = "README.md"
+build         = "build.rs"
+exclude       = [
+  ".gitignore",
+  ".travis.yml",
+  "deploy.sh",
+  "test/**/*",
+]
 
 [dependencies]
 libc = "*"
