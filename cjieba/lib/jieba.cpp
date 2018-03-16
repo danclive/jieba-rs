@@ -52,7 +52,7 @@ void FreeJieba(Jieba handle) {
 }
 
 void FreeWords(char** words) {
-  delete words;
+  delete[] words;
 }
 
 char** Cut(Jieba x, const char* sentence, int is_hmm_used) {
