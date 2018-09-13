@@ -12,11 +12,14 @@ keywords      = ["segment", "words", "jieba"]
 readme        = "README.md"
 build         = "build.rs"
 exclude       = [
-  ".gitignore",
-  ".travis.yml",
-  "deploy.sh",
-  "test/**/*",
-  "cjieba/*"
+    ".gitignore",
+    ".travis.yml",
+    "deploy.sh",
+    "test/**/*"
+]
+
+include       = [
+    "cjieba/*"
 ]
 
 [build-dependencies]
