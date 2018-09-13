@@ -40,15 +40,15 @@ extern "C" {
 
     fn Cut(handle: *mut c_void, sentence: *const c_char, is_hmm_used: c_int) -> *mut *mut c_char;
 
-    fn CutAll (handle: *mut c_void, sentence: * const c_char) -> * mut * mut c_char; 
+    fn CutAll(handle: *mut c_void, sentence: *const c_char) -> *mut *mut c_char; 
 
-    fn CutForSearch(handle: *mut c_void, sentence: * const c_char, is_hmm_used: c_int) -> *mut *mut c_char;
+    fn CutForSearch(handle: *mut c_void, sentence: *const c_char, is_hmm_used: c_int) -> *mut *mut c_char;
 
-    fn Tag( handle: *mut c_void, sentence: * const c_char) -> * mut * mut c_char;
+    fn Tag(handle: *mut c_void, sentence: *const c_char) -> *mut *mut c_char;
 
-    fn AddWord(handle: *mut c_void, word: * const c_char);
+    fn AddWord(handle: *mut c_void, word: *const c_char);
 
-    fn Tokenize(x: *mut c_void, sentence: * const c_char, mode: TokenizeMode , is_hmm_used: c_int) -> *mut Word;
+    fn Tokenize(x: *mut c_void, sentence: *const c_char, mode: TokenizeMode , is_hmm_used: c_int) -> *mut Word;
     
     fn Extract(handle: *mut c_void, sentence: *const c_char, top_k: c_int) -> *mut *mut c_char;
 
@@ -65,42 +65,26 @@ pub struct Jieba {
 }
 
 pub struct JiebaDict {
-    pub dict: CString,
-    pub hmm: CString,
-    pub user: CString,
-    pub idf: CString,
-    pub stop: CString
+    dict: CString,
+    hmm: CString,
+    user: CString,
+    idf: CString,
+    stop: CString
 }
 
 impl JiebaDict {
-    pub fn new(dict: Option<&str>, hmm: Option<&str>, user_dict: Option<&str>, idf_path: Option<&str>, stop_path: Option<&str>) -> Self {
+    pub fn new(dict: &str, hmm: &str, user_dict: &str, idf_path: &str, stop_path: &str) -> Self {
         JiebaDict {
-            dict: CString::new(dict.unwrap_or("cjieba/dict/jieba.dict.utf8")).expect("Can not parser dict path!"),
-            hmm: CString::new(hmm.unwrap_or("cjieba/dict/hmm_model.utf8")).expect("Can not parser hmm model path!"),
-            user: CString::new(user_dict.unwrap_or("cjieba/dict/user.dict.utf8")).expect("Can not parser user dict path!"),
-            idf: CString::new(idf_path.unwrap_or("cjieba/dict/idf.utf8")).expect("Can not parser idf path!"),
-            stop: CString::new(stop_path.unwrap_or("cjieba/dict/stop_words.utf8")).expect("Can not parser stop words path!")
-        }
-    }
-}
-
-impl Default for JiebaDict {
-    fn default() -> Self {
-        JiebaDict {
-            dict: CString::new("cjieba/dict/jieba.dict.utf8").expect("Can not parser dict path!"),
-            hmm: CString::new("cjieba/dict/hmm_model.utf8").expect("Can not parser hmm model path!"),
-            user: CString::new("cjieba/dict/user.dict.utf8").expect("Can not parser user dict path!"),
-            idf: CString::new("cjieba/dict/idf.utf8").expect("Can not parser idf path!"),
-            stop: CString::new("cjieba/dict/stop_words.utf8").expect("Can not parser stop words path!")
+            dict: CString::new(dict).expect("Can not parser dict path!"),
+            hmm: CString::new(hmm).expect("Can not parser hmm model path!"),
+            user: CString::new(user_dict).expect("Can not parser user dict path!"),
+            idf: CString::new(idf_path).expect("Can not parser idf path!"),
+            stop: CString::new(stop_path).expect("Can not parser stop words path!")
         }
     }
 }
 
 impl Jieba {
-    pub fn new() -> Self {
-        Jieba::with_dict(JiebaDict::default())
-    }
-
     pub fn with_dict(dict: JiebaDict) -> Self {
         unsafe {
             Jieba {
