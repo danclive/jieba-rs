@@ -15,7 +15,9 @@ exclude       = [
     ".gitignore",
     ".travis.yml",
     "deploy.sh",
-    "test/**/*"
+    "test/**/*",
+    "cjieba/.gitignore",
+    "cjieba/.travis.yml"
 ]
 
 [build-dependencies]
